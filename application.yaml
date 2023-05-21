@@ -1,0 +1,13 @@
+local:
+  CLUSTER:
+    HOST: 'https://localhost:6443'
+    KUBE_CONFIG_PATH: 'D:\certs\kubeconfig'
+    VOLUME_NFS_SERVER: 'localhost'
+    VOLUME_NFS_PATH: 'D:\data\nfs4share'
+
+container:
+  CLUSTER:
+    HOST: 'https://remote-host:6443'
+    KUBE_CONFIG_PATH: '/home/app/certs/kubeconfig'
+    VOLUME_NFS_SERVER: 'remote-host'
+    VOLUME_NFS_PATH: '/data/nfs4share'

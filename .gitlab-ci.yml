@@ -1,0 +1,57 @@
+image: python:3.10-slim
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  MAJOR: "1"
+  PIPELINE_SEQUENCE: $CI_PIPELINE_IID
+
+before_script:
+  - python3 -V
+  - pip install poetry
+  - poetry -V
+  - poetry config virtualenvs.create false
+  - poetry install --no-root
+
+build-job:
+  stage: build
+  script:
+    - poetry install --no-root
+
+#unit-test-job:
+#  stage: test
+#  script:
+#    - export PYTHONPATH=./app
+#    - poetry run pytest
+
+lint-test-job:
+  stage: test
+  script:
+    - which flake8
+    - poetry run flake8
+
+deploy-gitlab-job:
+  image: docker:23.0.1
+  stage: deploy
+  services:
+    - docker:23.0.1-dind
+
+  variables:
+    PROJECT_NAME: "MLOps-API"
+    MAJOR: "1"
+    PIPELINE_SEQUENCE: $CI_PIPELINE_IID
+
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
+  script:
+    - pwd
+    - docker build -t $CI_REGISTRY_IMAGE/mlops-api:$CI_COMMIT_SHORT_SHA  .
+    - docker push $CI_REGISTRY_IMAGE/mlops-api:$CI_COMMIT_SHORT_SHA
+
+  only:
+    - main
+    - deploy
